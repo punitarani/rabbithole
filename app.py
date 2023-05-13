@@ -11,11 +11,14 @@ from rabbithole.loader import load_files
 
 # Global variables
 q = Queue()
+results = {}
 
 
-def run_summarization(q: Queue, document: list[Document]):
+def run_summarization(q: Queue, document: list[Document], doc_name: str):
     """Execute the text summarization"""
-    q.put(summarize_document(document))
+    result = summarize_document(document)
+    results[doc_name] = result
+    q.put(True)
 
 
 st.title("RabbitHole")
@@ -29,18 +32,23 @@ if st.button("Summarize"):
 
     # Load the text from the uploaded PDF files
     texts = load_files(uploaded_files)
-    text = [doc_text for doc_name, doc_text in texts.items() for doc_text in doc_text]
 
-    # Start the summarization in a separate thread
-    # TODD: Display error instead of showing the loading animation forever
-    thread = threading.Thread(target=run_summarization, args=(q, text))
-    thread.start()
+    # Start the summarization in a separate thread for each document
+    threads = []
+    for doc_name, doc_text in texts.items():
+        thread = threading.Thread(target=run_summarization, args=(q, doc_text, doc_name))
+        thread.start()
+        threads.append(thread)
 
     # Display a loading animation while waiting for the summarization to complete
     with st.spinner('Summarizing...'):
-        thread.join()
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
 
-        # Retrieve the result from the queue
-        summarized_text = q.get()
-        st.success('Summarization completed.')
+    st.success('Summarization completed.')
+
+    # Display the results
+    for doc_name, summarized_text in results.items():
+        st.subheader(f"'{doc_name}' Summary:")
         st.write(summarized_text)

@@ -1,3 +1,3 @@
 """rabbithole package"""
 
-from .summarize import summarize_text
+from .summarize import summarize_document

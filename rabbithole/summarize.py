@@ -2,22 +2,21 @@
 
 from langchain import OpenAI
 from langchain.chains.summarize import load_summarize_chain
-from langchain.docstore.document import Document
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.schema import Document
 
 
-def summarize_text(text: str) -> str:
+def summarize_document(document: list[Document]) -> str:
     """
-    Summarize text using the langchain summarize chain
-    :param text: Text to summarize
+    Summarize a document using the langchain summarize chain
+
+    :param document: Document to summarize.
+    It must be a list of langchain.schema.Document objects
+
     :return: Summarized text
     """
 
-    text_splitter = CharacterTextSplitter()
-    llm = OpenAI(temperature=0.5)
+    llm = OpenAI()
     chain = load_summarize_chain(llm, chain_type="map_reduce")
-    texts = text_splitter.split_text(text)
-    docs = [Document(page_content=t) for t in texts[:3]]
-    summary = chain.run(docs)
+    summary = chain.run(document)
 
     return summary

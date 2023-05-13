@@ -12,6 +12,7 @@ openai = "^0.27.6"
 pymupdf = "^1.22.3"
 streamlit = "^1.22.0"
 tiktoken = "^0.4.0"
+transformers = "^4.29.1"
 
 
 [build-system]

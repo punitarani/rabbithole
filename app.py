@@ -16,9 +16,9 @@ results = {}
 
 def run_summarization(q: Queue, document: list[Document], doc_name: str):
     """Execute the text summarization"""
-    result = summarize_document(document)
+    result = summarize_document(document[:2])
     results[doc_name] = result
-    q.put(True)
+    q.put((doc_name, result))
 
 
 st.title("RabbitHole")
@@ -43,12 +43,10 @@ if st.button("Summarize"):
     # Display a loading animation while waiting for the summarization to complete
     with st.spinner('Summarizing...'):
         # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
+        while any(thread.is_alive() for thread in threads) or not q.empty():
+            # Check if there's a new result to display
+            while not q.empty():
+                doc_name, result = q.get()
+                st.write(f"'{doc_name}' Summary:\n{result}")
 
     st.success('Summarization completed.')
-
-    # Display the results
-    for doc_name, summarized_text in results.items():
-        st.subheader(f"'{doc_name}' Summary:")
-        st.write(summarized_text)

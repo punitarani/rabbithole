@@ -33,6 +33,19 @@ def load_file(file: UploadedFile) -> list[Document]:
         raise ValueError(f"Unsupported file type: {file.type}")
 
 
+def load_files(files: list[UploadedFile]) -> dict[str, list[Document]]:
+    """
+    Load a list of files and return a dictionary of Document objects
+    :param files: List of files to load.
+    Supported file types: PDF
+    :return: Dictionary of Document objects
+    """
+    documents = {}
+    for file in files:
+        documents[file.name] = load_file(file)
+    return documents
+
+
 def run_summarization(q: Queue, document: list[Document]):
     """Execute the text summarization"""
     q.put(summarize_document(document))
@@ -40,17 +53,19 @@ def run_summarization(q: Queue, document: list[Document]):
 
 st.title("RabbitHole")
 
-uploaded_file = st.file_uploader("Upload a text file", type=["pdf"], accept_multiple_files=False)
+uploaded_files = st.file_uploader("Upload content", type=["pdf"], accept_multiple_files=True)
 
 if st.button("Summarize"):
-    if uploaded_file is None:
+    if not uploaded_files:
         st.warning("Please upload a file first.")
         st.stop()
 
-    # Load the text from the uploaded PDF file
-    text = load_file(uploaded_file)
+    # Load the text from the uploaded PDF files
+    texts = load_files(uploaded_files)
+    text = [doc_text for doc_name, doc_text in texts.items() for doc_text in doc_text]
 
     # Start the summarization in a separate thread
+    # TODD: Display error instead of showing the loading animation forever
     thread = threading.Thread(target=run_summarization, args=(q, text))
     thread.start()
 

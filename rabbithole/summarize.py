@@ -16,7 +16,7 @@ def summarize_document(document: list[Document]) -> str:
     """
 
     llm = OpenAI()
-    chain = load_summarize_chain(llm, chain_type="map_reduce")
+    chain = load_summarize_chain(llm, chain_type="map_reduce", verbose=True)
     summary = chain.run(document)
 
     return summary

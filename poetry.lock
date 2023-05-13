@@ -179,6 +179,18 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "backoff"
+version = "2.2.1"
+description = "Function decoration for backoff and retry"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
+    {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
+]
+
+[[package]]
 name = "blinker"
 version = "1.6.2"
 description = "Fast, simple object-to-object and broadcast signaling"
@@ -313,6 +325,23 @@ files = [
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[[package]]
+name = "cohere"
+version = "4.4.1"
+description = ""
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "cohere-4.4.1-py3-none-any.whl", hash = "sha256:ca2007aa963b634045d51c46dd378d8fb07f2497570301333d3346c6ea5327bc"},
+    {file = "cohere-4.4.1.tar.gz", hash = "sha256:36386c4c92c800c2e08e824004d7c3129fa41da67db89dfd8297666640d69f8c"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.0,<4.0"
+backoff = ">=2.0,<3.0"
+requests = ">=2.0,<3.0"
 
 [[package]]
 name = "colorama"
@@ -2586,4 +2615,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8f30026a150710727599771ea57c0c9fdf0d32565a92d266c1c333fb3fd94da6"
+content-hash = "65e49ffd60836bd6f09abc78678c2d65d8dbab22d16163acdfc5daf23c1a4ad3"

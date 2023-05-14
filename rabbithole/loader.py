@@ -4,7 +4,7 @@ import tempfile
 import streamlit as st
 from langchain.document_loaders import Docx2txtLoader, PyMuPDFLoader, TextLoader, UnstructuredImageLoader
 from langchain.schema import Document
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import TokenTextSplitter
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES, convert_to_mp3
@@ -33,7 +33,7 @@ def load_file(file: UploadedFile) -> list[Document]:
     Supported file types: PDF
     :return: List of Document objects
     """
-    text_splitter = CharacterTextSplitter(chunk_size=4000, chunk_overlap=200)
+    text_splitter = TokenTextSplitter(model_name="davinci", chunk_size=2000, chunk_overlap=100)
 
     # Handle .docx files
     if file.name.endswith(".docx"):

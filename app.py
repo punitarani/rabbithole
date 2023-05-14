@@ -8,6 +8,7 @@ from langchain.schema import Document
 
 from rabbithole import summarize_document
 from rabbithole.loader import load_files
+from rabbithole.mp3 import SUPPORTED_FILE_TYPES
 
 # Global variables
 q = Queue()
@@ -23,7 +24,7 @@ def run_summarization(q: Queue, document: list[Document], doc_name: str):
 
 st.title("RabbitHole")
 
-uploaded_files = st.file_uploader("Upload content", type=["pdf"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("Upload content", type=["pdf", *SUPPORTED_FILE_TYPES], accept_multiple_files=True)
 
 if st.button("Summarize"):
     if not uploaded_files:

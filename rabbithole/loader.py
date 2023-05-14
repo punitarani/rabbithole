@@ -1,10 +1,13 @@
 """rabbithole.loader module"""
 import tempfile
 
-from langchain.document_loaders import PyMuPDFLoader
+from langchain.document_loaders import PyMuPDFLoader, TextLoader
 from langchain.schema import Document
 from langchain.text_splitter import CharacterTextSplitter
 from streamlit.runtime.uploaded_file_manager import UploadedFile
+
+from rabbithole.mp3 import SUPPORTED_FILE_TYPES, convert_to_mp3
+from rabbithole.transcribe import transcribe
 
 
 def load_file(file: UploadedFile) -> list[Document]:
@@ -23,6 +26,26 @@ def load_file(file: UploadedFile) -> list[Document]:
         temp_file.close()
         # Load the file using PyMuPDF
         return PyMuPDFLoader(file_path=temp_file.name).load_and_split(text_splitter=text_splitter)
+
+    # Handle Audio and Video files
+    elif file.name.endswith(SUPPORTED_FILE_TYPES):
+        # Save to temporary file
+        temp_file = tempfile.NamedTemporaryFile(suffix=f".{file.name.split('.')[-1]}", delete=False)
+        temp_file.write(file.read())
+        temp_file.close()
+
+        # Convert to mp3 and transcribe
+        mp3_file = convert_to_mp3(temp_file.name)
+        transcription = transcribe(mp3_file)
+
+        # Save transcription to temporary file
+        temp_file = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
+        temp_file.write(transcription.encode())
+        temp_file.close()
+
+        # Load the file using TextLoader
+        return TextLoader(file_path=temp_file.name).load_and_split(text_splitter=text_splitter)
+
     else:
         raise ValueError(f"Unsupported file type: {file.type}")
 

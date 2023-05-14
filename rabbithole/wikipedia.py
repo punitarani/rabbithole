@@ -1,5 +1,7 @@
 """rabbithole.wikipedia module"""
 
+from time import time
+
 import chromadb.api
 from datasets import load_dataset
 from tqdm import tqdm
@@ -25,15 +27,22 @@ def prepare_wikipedia_collection(batch_size: int = 10000):
     collection = client.create_collection("wikipedia")
 
     total_rows = len(wikipedia_dataset)
-    for i in tqdm(range(0, total_rows, batch_size), desc='Processing batches'):
-        batch_data = wikipedia_dataset[i: i + batch_size]
+    with tqdm(total=total_rows, desc='Processing batches', unit='vectors') as pbar:
+        for i in range(0, total_rows, batch_size):
+            start_time = time()
 
-        collection.add(
-            ids=[str(id) for id in batch_data["id"]],
-            embeddings=batch_data["emb"],
-            documents=batch_data["text"],
-            metadatas=[{"title": title} for title in batch_data["title"]],
-        )
+            batch_data = wikipedia_dataset[i: i + batch_size]
+            collection.add(
+                ids=[str(id) for id in batch_data["id"]],
+                embeddings=batch_data["emb"],
+                documents=batch_data["text"],
+                metadatas=[{"title": title} for title in batch_data["title"]],
+            )
+
+            elapsed_time = time() - start_time
+            vectors_per_second = batch_size / elapsed_time
+            pbar.set_postfix({'vectors/sec': vectors_per_second}, refresh=True)
+            pbar.update(batch_size)
 
 
 if __name__ == "__main__":

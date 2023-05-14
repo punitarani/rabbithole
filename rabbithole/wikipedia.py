@@ -2,7 +2,7 @@
 
 from time import time
 
-import chromadb.api
+from chromadb.api import Collection
 from datasets import load_dataset
 from tqdm import tqdm
 
@@ -11,7 +11,7 @@ from rabbithole.vecstore import client
 wikipedia_dataset = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train", streaming=False)
 
 
-def get_wikipedia_collection() -> chromadb.api.Collection:
+def get_wikipedia_collection() -> Collection:
     """
     Get the wikipedia collection
     """

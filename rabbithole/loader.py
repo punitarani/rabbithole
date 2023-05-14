@@ -43,7 +43,15 @@ def load_file(file: UploadedFile) -> list[Document]:
     # Handle .pdf files
     elif file.name.endswith(".pdf"):
         temp_file = save_to_temp_file(file)
-        return PyMuPDFLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
+        pdf_doc = PyMuPDFLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
+
+        # Save transcription to temporary file
+        temp_file = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
+        temp_file.write("\n".join([page.page_content for page in pdf_doc]).encode())
+        temp_file.close()
+
+        # Load the file using TextLoader
+        return TextLoader(file_path=temp_file.name, encoding="utf-8").load_and_split(text_splitter=text_splitter)
 
     # Handle .txt files
     elif file.name.endswith(".txt"):

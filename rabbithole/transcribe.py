@@ -16,10 +16,11 @@ def transcribe(filepath: str) -> str:
     # Split the file into chunks
     files = chunk_mp3(filepath)
 
-    transcripts = []
+    transcripts: list[str] = []
 
     for file in tqdm(files, desc="Transcribing audio", unit="chunk"):
         with open(file, "rb") as audio_file:
-            transcripts.append(openai.Audio.transcribe("whisper-1", audio_file))
+            transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            transcripts.append(transcript.get("text", ""))
 
     return " ".join(transcripts)

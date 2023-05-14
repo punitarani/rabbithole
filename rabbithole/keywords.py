@@ -11,11 +11,12 @@ from rabbithole.wikipedia import get_wikipedia_collection
 wikipedia_collection = get_wikipedia_collection()
 
 
-def get_document_keywords(embeddings: list[list[float]], n: int = 10) -> list[str]:
+def get_document_keywords(embeddings: list[list[float]], n: int = 10, n_mult=3) -> list[str]:
     """
     Get keywords from the text embeddings of a document
     :param embeddings: Text embeddings to get keywords from
     :param n: Number of keywords to return
+    :param n_mult: n-multiplier to query and filter more keywords
     :return List of keywords
 
     NOTE: This requires the embeddings to use cohere multilingual-22-12 model
@@ -25,8 +26,6 @@ def get_document_keywords(embeddings: list[list[float]], n: int = 10) -> list[st
         raise TypeError(f"embeddings must be a list. Got {type(embeddings)}")
     if not isinstance(embeddings[0], list):
         raise TypeError(f"embeddings must be a list of lists. Got list[{type(embeddings[0])}]")
-
-    n_mult = 3  # multiplier to get more results
 
     # Query the Wikipedia collection with the embeddings
     results: QueryResult = wikipedia_collection.query(

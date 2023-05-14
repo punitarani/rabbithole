@@ -92,14 +92,14 @@ if st.button("Dive in"):
     global_documents = load_files_with_spinner(uploaded_files)
     global_embeddings = embed_documents_with_spinner(global_documents)
     global_keywords = extract_keywords_with_spinner(global_embeddings)
-    global_summaries = generate_summary_with_spinner(global_documents)
+    # global_summaries = generate_summary_with_spinner(global_documents)
 
     # Display the keywords and summaries
     for doc_name, doc_keywords in global_keywords.items():
         st.header(doc_name)
         st.subheader("Keywords")
         st.write(doc_keywords)
-        st.subheader("Summary")
-        st.write(global_summaries[doc_name])
+        # st.subheader("Summary")
+        # st.write(global_summaries[doc_name])
 
     st.success('Summarization completed.')

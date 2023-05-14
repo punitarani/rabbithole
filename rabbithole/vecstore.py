@@ -1,10 +1,8 @@
 """rabbithole.vecstore module"""
 
-from pathlib import Path
+import os
 
-import chromadb
-from chromadb.config import Settings
+import pinecone
 
-CHROMADB_DIR = Path(__file__).resolve().parent.parent.joinpath("data", "chromadb")
-
-client = chromadb.Client(settings=Settings(chroma_db_impl="duckdb+parquet", persist_directory=str(CHROMADB_DIR)))
+pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment="us-west4-gcp")
+index = pinecone.Index("rabbithole")

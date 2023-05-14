@@ -5,11 +5,9 @@ from heapq import nlargest
 from math import log
 
 import streamlit as st
-from chromadb.api import QueryResult
+from pinecone import QueryResponse
 
-from rabbithole.wikipedia import get_wikipedia_collection
-
-wikipedia_collection = get_wikipedia_collection()
+from rabbithole.vecstore import index
 
 
 @st.cache_data
@@ -29,19 +27,27 @@ def get_document_keywords(embeddings: list[list[float]], n: int = 10, n_mult=3) 
     if not isinstance(embeddings[0], list):
         raise TypeError(f"embeddings must be a list of lists. Got list[{type(embeddings[0])}]")
 
-    # Query the Wikipedia collection with the embeddings
-    results: QueryResult = wikipedia_collection.query(
-        query_embeddings=embeddings,
-        n_results=n * n_mult,
-    )
+    results: list[list[dict]] = []
 
-    keywords = []  # to store the keywords
-    metadatas = results.get("metadatas", [])
+    # Query the Wikipedia collection with the embeddings
+    for emb in embeddings:
+        result: QueryResponse = index.query(
+            vector=emb,
+            top_k=n * n_mult,
+            include_values=False,
+            include_metadata=True,
+            namespace="wikipedia"
+        )
+        results.append(result.get("matches", []))
 
     # Loop over the metadatas to extract the titles as keywords
-    for metadata in metadatas:
-        keyword_set = {titles.get("title") for titles in metadata if titles.get("title")}
-        keywords.append(keyword_set)
+    keywords = [
+        [
+            vector.get("metadata").get("title")
+            for vector in result if vector.get("metadata")
+        ]
+        for result in results
+    ]
 
     # Initialize counters for keyword count, weight, and document frequency
     keyword_count = Counter()

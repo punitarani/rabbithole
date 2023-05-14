@@ -1,33 +1,12 @@
 """rabbithole.wikipedia module"""
 
-import os
-
-from chromadb.api import Collection
-from chromadb.errors import ChromaError
-from chromadb.utils import embedding_functions
 from datasets import load_dataset
 from tqdm import tqdm
 
-from rabbithole.vecstore import client
-
-cohere_ef = embedding_functions.CohereEmbeddingFunction(
-    api_key=os.getenv("COHERE_API_KEY"),
-    model_name="multilingual-22-12",
-)
+from rabbithole.vecstore import index
 
 
-def get_wikipedia_collection() -> Collection:
-    """
-    Get the wikipedia collection
-    :return: The wikipedia collection
-    """
-    try:
-        return client.get_collection("wikipedia", embedding_function=cohere_ef)
-    except (ValueError, ChromaError):
-        return prepare_wikipedia_collection()
-
-
-def prepare_wikipedia_collection(batch_size: int = 10000) -> Collection:
+def prepare_wikipedia_collection(batch_size: int = 500):
     """
     Prepare the wikipedia collection
     :param batch_size: Batch size to use when adding documents to the collection
@@ -38,27 +17,21 @@ def prepare_wikipedia_collection(batch_size: int = 10000) -> Collection:
     wikipedia_dataset = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train", streaming=False)
     print(f"Loaded Wikipedia dataset: {wikipedia_dataset.info}\n")
 
-    for collection in client.list_collections():
-        if collection.name == "wikipedia":
-            print("Wikipedia collection already exists. Deleting and recreating...")
-            client.delete_collection("wikipedia")
-            break
-    collection = client.create_collection("wikipedia", embedding_function=cohere_ef)
-
     total_rows = len(wikipedia_dataset)
     with tqdm(total=total_rows, desc='Processing batches', unit='vectors') as pbar:
         for i in range(0, total_rows, batch_size):
             batch_data = wikipedia_dataset[i: i + batch_size]
-            collection.add(
-                ids=[str(emb_id) for emb_id in batch_data["id"]],
-                embeddings=batch_data["emb"],
-                documents=batch_data["text"],
-                metadatas=[{"title": title, "url": url} for title, url in zip(batch_data["title"], batch_data["url"])],
-            )
-
+            vectors = [
+                (
+                    str(emb_id),  # Vector ID
+                    emb,  # Dense vector values
+                    {"title": title, "url": url}  # Vector metadata
+                )
+                for emb_id, emb, title, url in
+                zip(batch_data["id"], batch_data["emb"], batch_data["title"], batch_data["url"])
+            ]
+            index.upsert(vectors=vectors, namespace="wikipedia")
             pbar.update(batch_size)
-
-    return collection
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+chromadb = "^0.3.22"
 cohere = "^4.4.1"
 datasets = "^2.12.0"
 langchain = "^0.0.168"

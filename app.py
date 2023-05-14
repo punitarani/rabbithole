@@ -71,7 +71,7 @@ def generate_summary_with_spinner(documents: dict[str, list[Document]]) -> dict[
     summaries = {}
     for doc_name, doc_text in documents.items():
         with st.spinner(f'Summarizing {doc_name}...'):
-            summaries[doc_name] = summarize_document(doc_text[:2])
+            summaries[doc_name] = summarize_document(doc_text)
     return summaries
 
 

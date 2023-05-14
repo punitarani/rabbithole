@@ -10,11 +10,10 @@ from rabbithole.loader import load_file, SUPPORTED_IMG_FILE_TYPES
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES
 from rabbithole.planner import generate_plan
 
-# Global variables
-global_documents = {}
-global_embeddings = {}
-global_keywords = {}
-global_summaries = {}
+# Session variables
+for state_var in ["uploaded_files", "documents", "embeddings", "keywords", "summaries"]:
+    if state_var not in st.session_state:
+        st.session_state[state_var] = {}
 
 
 def load_files_with_spinner(files: list) -> dict[str, list[Document]]:
@@ -80,7 +79,7 @@ def generate_summary_with_spinner(documents: dict[str, list[Document]]) -> dict[
 def generate_plan_with_spinner() -> dict:
     """Generate a logical plan to study the uploaded documents."""
     with st.spinner("Generating plan..."):
-        plan = generate_plan(global_summaries, global_keywords)
+        plan = generate_plan(st.session_state.summaries, st.session_state.keywords)
     return plan
 
 
@@ -97,17 +96,30 @@ if st.button("Dive in"):
         st.warning("Please upload a file first.")
         st.stop()
 
-    # Load the text from the uploaded PDF files
-    global_documents = load_files_with_spinner(uploaded_files)
-    global_embeddings = embed_documents_with_spinner(global_documents)
-    global_keywords = extract_keywords_with_spinner(global_embeddings)
-    global_summaries = generate_summary_with_spinner(global_documents)
+    # Check if uploaded files have changed
+    uploaded_files_changed = False
+    if len(uploaded_files) != len(st.session_state.uploaded_files):
+        uploaded_files_changed = True
+    else:
+        for new_file, old_file in zip(uploaded_files, st.session_state.uploaded_files):
+            if new_file != old_file:
+                uploaded_files_changed = True
+                break
+
+    if uploaded_files_changed:
+        st.session_state.uploaded_files = uploaded_files
+
+        # Load the text from the uploaded PDF files
+        st.session_state.documents = load_files_with_spinner(st.session_state.uploaded_files)
+        st.session_state.embeddings = embed_documents_with_spinner(st.session_state.documents)
+        st.session_state.keywords = extract_keywords_with_spinner(st.session_state.embeddings)
+        st.session_state.summaries = generate_summary_with_spinner(st.session_state.documents)
 
     # Display the keywords and summaries
-    for doc_name, doc_keywords in global_keywords.items():
+    for doc_name, doc_keywords in st.session_state.keywords.items():
         st.header(doc_name)
         st.caption("Keywords: " + ", ".join(doc_keywords))
-        st.write(global_summaries[doc_name])
+        st.write(st.session_state.summaries[doc_name])
         st.divider()
 
     # Display the plan

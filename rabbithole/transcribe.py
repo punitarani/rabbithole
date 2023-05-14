@@ -1,6 +1,7 @@
 """rabbithole.transcribe module"""
 
 import openai
+from tqdm import tqdm
 
 from rabbithole.mp3 import chunk_mp3
 
@@ -17,7 +18,7 @@ def transcribe(filepath: str) -> str:
 
     transcripts = []
 
-    for file in files:
+    for file in tqdm(files, desc="Transcribing audio", unit="chunk"):
         with open(file, "rb") as audio_file:
             transcripts.append(openai.Audio.transcribe("whisper-1", audio_file))
 

@@ -16,6 +16,8 @@ from rabbithole.planner import generate_plan
 for state_var in ["uploaded_files", "documents", "embeddings", "keywords", "summaries"]:
     if state_var not in st.session_state:
         st.session_state[state_var] = {}
+if "plan" not in st.session_state:
+    st.session_state.plan = None
 if "processed" not in st.session_state:
     st.session_state.processed = False
 if "bot_messages" not in st.session_state:
@@ -160,23 +162,6 @@ if not st.session_state.processed:
             st.write(st.session_state.summaries[doc_name])
             st.divider()
 
-        # Display the plan
-        st.header("Study Plan")
-        plan = generate_plan_with_spinner()
-        for data in plan.get("plan", []):
-            for doc_name, doc_data in data.items():
-                st.subheader(doc_name)
-                st.write(f"**Background Concepts**")
-                for concept in doc_data.get("Background Concepts", []):
-                    st.write(f"- {concept}")
-                st.write(f"**Key Concepts**")
-                for concept in doc_data.get("Key Concepts", []):
-                    st.write(f"- {concept}")
-                st.write(f"**Further Reading**")
-                for concept in doc_data.get("Further Reading", []):
-                    st.write(f"- {concept}")
-            st.write("")
-
         st.session_state.processed = True
         st.success('Summarization completed.')
 
@@ -184,6 +169,27 @@ if st.session_state.processed:
     st.header("Loaded Files")
     for file in st.session_state.uploaded_files:
         st.write(file.name)
+
+    # Display the plan
+    st.header("Study Plan")
+    if st.session_state.plan is None:
+        plan = generate_plan_with_spinner()
+        st.session_state.plan = plan
+    else:
+        plan = st.session_state.plan
+    for data in plan.get("plan", []):
+        for doc_name, doc_data in data.items():
+            st.subheader(doc_name)
+            st.write(f"**Background Concepts**")
+            for concept in doc_data.get("Background Concepts", []):
+                st.write(f"- {concept}")
+            st.write(f"**Key Concepts**")
+            for concept in doc_data.get("Key Concepts", []):
+                st.write(f"- {concept}")
+            st.write(f"**Further Reading**")
+            for concept in doc_data.get("Further Reading", []):
+                st.write(f"- {concept}")
+        st.write("")
 
     st.header("Chat")
     # Iterate through the bot and user message and print them alternatively
@@ -201,5 +207,6 @@ if st.session_state.processed:
 
     user_input = st.text_input("What do you want to learn more about?", key="user_message")
     if st.button("Send"):
-        generate_response(user_input)
+        with st.spinner("Generating response..."):
+            generate_response(user_input)
         st.experimental_rerun()

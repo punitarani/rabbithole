@@ -1,5 +1,7 @@
 """rabbithole.mp3 module"""
 
+import tempfile
+
 from moviepy.editor import AudioFileClip
 from pydub import AudioSegment
 
@@ -43,7 +45,7 @@ def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
     :param chunk_length: Length of each chunk in seconds
     :return: List of chunked filepaths
 
-    Saves the chunked files in the same directory with -{i} suffix
+    Saves the chunked files in a temporary directory
     """
 
     audio = AudioSegment.from_mp3(filepath)
@@ -64,8 +66,8 @@ def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
     # Write each chunk to a file
     chunked_filepaths = []
     for i, chunk in enumerate(chunks):
-        chunk_filepath = filepath.rsplit('.', 1)[0] + f"-{i}.mp3"
-        chunk.export(chunk_filepath, format="mp3")
-        chunked_filepaths.append(chunk_filepath)
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp:
+            chunk.export(temp.name, format="mp3")
+            chunked_filepaths.append(temp.name)
 
     return chunked_filepaths

@@ -17,6 +17,7 @@ streamlit = "^1.22.0"
 tiktoken = "^0.4.0"
 torch = "^2.0.1"
 transformers = "^4.29.1"
+tqdm = "^4.65.0"
 
 
 [build-system]

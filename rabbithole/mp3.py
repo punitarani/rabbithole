@@ -4,6 +4,7 @@ import tempfile
 
 from moviepy.editor import AudioFileClip
 from pydub import AudioSegment
+from tqdm import tqdm
 
 SUPPORTED_FILE_TYPES = (
     # Video formats
@@ -65,7 +66,7 @@ def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
 
     # Write each chunk to a file
     chunked_filepaths = []
-    for i, chunk in enumerate(chunks):
+    for i, chunk in enumerate(tqdm(chunks, desc="Saving audio chunks", unit="chunk")):
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp:
             chunk.export(temp.name, format="mp3")
             chunked_filepaths.append(temp.name)

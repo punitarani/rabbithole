@@ -1,7 +1,9 @@
 """Streamlit App"""
 
+import openai
 import streamlit as st
 from langchain.schema import Document
+from streamlit_chat import message
 
 from rabbithole import summarize_document
 from rabbithole.embedding import embed_document
@@ -10,11 +12,47 @@ from rabbithole.loader import load_file, SUPPORTED_IMG_FILE_TYPES
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES
 from rabbithole.planner import generate_plan
 
-# Global variables
-global_documents = {}
-global_embeddings = {}
-global_keywords = {}
-global_summaries = {}
+# Session variables
+for state_var in ["uploaded_files", "documents", "embeddings", "keywords", "summaries"]:
+    if state_var not in st.session_state:
+        st.session_state[state_var] = {}
+if "plan" not in st.session_state:
+    st.session_state.plan = None
+if "processed" not in st.session_state:
+    st.session_state.processed = False
+if "bot_messages" not in st.session_state:
+    st.session_state.bot_messages = [
+        "Hello, I am here to help you learn more efficiently"
+    ]
+if "user_messages" not in st.session_state:
+    st.session_state.user_messages = []
+
+
+def generate_response(prompt):
+    """Generate a response to a prompt using the GPT-3.5 Turbo model"""
+    st.session_state['user_messages'].append(prompt)
+
+    messages = []
+    # Alternate between bot and the assistant until the conversation is over
+    msg_idx = 0
+    while True:
+        if len(st.session_state['bot_messages']) > msg_idx:
+            messages.append({"role": "assistant", "content": st.session_state['bot_messages'][msg_idx]})
+        else:
+            break
+        if len(st.session_state['user_message']) > msg_idx:
+            messages.append({"role": "user", "content": st.session_state['user_messages'][msg_idx]})
+        else:
+            break
+        msg_idx += 1
+    print(messages)
+    completion = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages
+    )
+    response = completion.choices[0].message.content
+    st.session_state['bot_messages'].append(response)
+    print(response)
 
 
 def load_files_with_spinner(files: list) -> dict[str, list[Document]]:
@@ -80,7 +118,7 @@ def generate_summary_with_spinner(documents: dict[str, list[Document]]) -> dict[
 def generate_plan_with_spinner() -> dict:
     """Generate a logical plan to study the uploaded documents."""
     with st.spinner("Generating plan..."):
-        plan = generate_plan(global_summaries, global_keywords)
+        plan = generate_plan(st.session_state.summaries, st.session_state.keywords)
     return plan
 
 
@@ -88,31 +126,57 @@ st.set_page_config(page_title="RabbitHole", page_icon="🐇", layout="wide")
 
 st.title("RabbitHole")
 
-uploaded_files = st.file_uploader("Upload content",
-                                  type=["docx", "pdf", "txt", *SUPPORTED_IMG_FILE_TYPES, *SUPPORTED_AV_FILE_TYPES],
-                                  accept_multiple_files=True)
+if not st.session_state.processed:
+    uploaded_files = st.file_uploader("Upload content",
+                                      type=["docx", "pdf", "txt", *SUPPORTED_IMG_FILE_TYPES, *SUPPORTED_AV_FILE_TYPES],
+                                      accept_multiple_files=True)
 
-if st.button("Dive in"):
-    if not uploaded_files:
-        st.warning("Please upload a file first.")
-        st.stop()
+    if st.button("Dive in"):
+        if not uploaded_files:
+            st.warning("Please upload a file first.")
+            st.stop()
 
-    # Load the text from the uploaded PDF files
-    global_documents = load_files_with_spinner(uploaded_files)
-    global_embeddings = embed_documents_with_spinner(global_documents)
-    global_keywords = extract_keywords_with_spinner(global_embeddings)
-    global_summaries = generate_summary_with_spinner(global_documents)
+        # Check if uploaded files have changed
+        uploaded_files_changed = False
+        if len(uploaded_files) != len(st.session_state.uploaded_files):
+            uploaded_files_changed = True
+        else:
+            for new_file, old_file in zip(uploaded_files, st.session_state.uploaded_files):
+                if new_file != old_file:
+                    uploaded_files_changed = True
+                    break
 
-    # Display the keywords and summaries
-    for doc_name, doc_keywords in global_keywords.items():
-        st.header(doc_name)
-        st.caption("Keywords: " + ", ".join(doc_keywords))
-        st.write(global_summaries[doc_name])
-        st.divider()
+        if uploaded_files_changed:
+            st.session_state.uploaded_files = uploaded_files
+
+            # Load the text from the uploaded PDF files
+            st.session_state.documents = load_files_with_spinner(st.session_state.uploaded_files)
+            st.session_state.embeddings = embed_documents_with_spinner(st.session_state.documents)
+            st.session_state.keywords = extract_keywords_with_spinner(st.session_state.embeddings)
+            st.session_state.summaries = generate_summary_with_spinner(st.session_state.documents)
+
+        # Display the keywords and summaries
+        for doc_name, doc_keywords in st.session_state.keywords.items():
+            st.header(doc_name)
+            st.caption("Keywords: " + ", ".join(doc_keywords))
+            st.write(st.session_state.summaries[doc_name])
+            st.divider()
+
+        st.session_state.processed = True
+        st.success('Summarization completed.')
+
+if st.session_state.processed:
+    st.header("Loaded Files")
+    for file in st.session_state.uploaded_files:
+        st.write(file.name)
 
     # Display the plan
     st.header("Study Plan")
-    plan = generate_plan_with_spinner()
+    if st.session_state.plan is None:
+        plan = generate_plan_with_spinner()
+        st.session_state.plan = plan
+    else:
+        plan = st.session_state.plan
     for data in plan.get("plan", []):
         for doc_name, doc_data in data.items():
             st.subheader(doc_name)
@@ -127,4 +191,22 @@ if st.button("Dive in"):
                 st.write(f"- {concept}")
         st.write("")
 
-    st.success('Summarization completed.')
+    st.header("Chat")
+    # Iterate through the bot and user message and print them alternatively
+    message_i = 0
+    while True:
+        if len(st.session_state.bot_messages) > message_i:
+            message(st.session_state.bot_messages[message_i])
+        else:
+            break
+        if len(st.session_state.user_messages) > message_i:
+            message(st.session_state.user_messages[message_i], is_user=True)
+        else:
+            break
+        message_i += 1
+
+    user_input = st.text_input("What do you want to learn more about?", key="user_message")
+    if st.button("Send"):
+        with st.spinner("Generating response..."):
+            generate_response(user_input)
+        st.experimental_rerun()

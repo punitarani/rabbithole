@@ -6,7 +6,7 @@ from moviepy.editor import AudioFileClip
 from pydub import AudioSegment
 from tqdm import tqdm
 
-SUPPORTED_FILE_TYPES = (
+SUPPORTED_AV_FILE_TYPES = (
     # Video formats
     "mp4", "mkv", "webm", "flv", "avi", "mov", "wmv",
     # Audio formats
@@ -26,7 +26,7 @@ def convert_to_mp3(filepath: str) -> str:
         return filepath
 
     # Check if the file type is supported
-    if filepath.rsplit('.', 1)[-1] not in SUPPORTED_FILE_TYPES:
+    if filepath.rsplit('.', 1)[-1] not in SUPPORTED_AV_FILE_TYPES:
         raise ValueError(f"Unsupported file type: {filepath.rsplit('.', 1)[-1]}")
 
     # Load video or audio file

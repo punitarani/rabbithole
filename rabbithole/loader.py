@@ -6,7 +6,7 @@ from langchain.schema import Document
 from langchain.text_splitter import CharacterTextSplitter
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
-from rabbithole.mp3 import SUPPORTED_FILE_TYPES, convert_to_mp3
+from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES, convert_to_mp3
 from rabbithole.transcribe import transcribe
 
 
@@ -47,7 +47,7 @@ def load_file(file: UploadedFile) -> list[Document]:
         return TextLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
 
     # Handle Audio and Video files
-    elif file.name.endswith(SUPPORTED_FILE_TYPES):
+    elif file.name.endswith(SUPPORTED_AV_FILE_TYPES):
         temp_file = save_to_temp_file(file)
 
         # Convert to mp3 and transcribe

@@ -8,6 +8,7 @@ from rabbithole.embedding import embed_document
 from rabbithole.keywords import get_document_keywords
 from rabbithole.loader import load_file, SUPPORTED_IMG_FILE_TYPES
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES
+from rabbithole.planner import generate_plan
 
 # Global variables
 global_documents = {}
@@ -28,6 +29,7 @@ def load_files_with_spinner(files: list) -> dict[str, list[Document]]:
     for file in files:
         with st.spinner(f'Loading {file.name}...'):
             documents[file.name] = load_file(file)
+            print(file.name, [len(doc.page_content) for doc in documents[file.name]])
     return documents
 
 
@@ -75,6 +77,13 @@ def generate_summary_with_spinner(documents: dict[str, list[Document]]) -> dict[
     return summaries
 
 
+def generate_plan_with_spinner() -> dict:
+    """Generate a logical plan to study the uploaded documents."""
+    with st.spinner("Generating plan..."):
+        plan = generate_plan(global_summaries, global_keywords)
+    return plan
+
+
 st.set_page_config(page_title="RabbitHole", page_icon="🐇", layout="wide")
 
 st.title("RabbitHole")
@@ -100,5 +109,22 @@ if st.button("Dive in"):
         st.caption("Keywords: " + ", ".join(doc_keywords))
         st.write(global_summaries[doc_name])
         st.divider()
+
+    # Display the plan
+    st.header("Study Plan")
+    plan = generate_plan_with_spinner()
+    for data in plan.get("plan", []):
+        for doc_name, doc_data in data.items():
+            st.subheader(doc_name)
+            st.write(f"**Background Concepts**")
+            for concept in doc_data.get("Background Concepts", []):
+                st.write(f"- {concept}")
+            st.write(f"**Key Concepts**")
+            for concept in doc_data.get("Key Concepts", []):
+                st.write(f"- {concept}")
+            st.write(f"**Further Reading**")
+            for concept in doc_data.get("Further Reading", []):
+                st.write(f"- {concept}")
+        st.write("")
 
     st.success('Summarization completed.')

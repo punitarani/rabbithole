@@ -35,8 +35,8 @@ def generate_plan(summaries: dict[str, str], keywords: dict[str, list[str]]) -> 
             {{
                 "Document 1": {{
                     "Background Concepts": ["Concept 1", "Concept 2", ...],
-                    "Key concepts": ["Concept 1", "Concept 2", ...],
-                    "Further reading": ["Concept 1", "Concept 2", ...]
+                    "Key Concepts": ["Concept 1", "Concept 2", ...],
+                    "Further Reading": ["Concept 1", "Concept 2", ...]
                 }}
             }}
             ...

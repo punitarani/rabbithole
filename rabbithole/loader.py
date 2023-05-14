@@ -1,7 +1,7 @@
 """rabbithole.loader module"""
 import tempfile
 
-from langchain.document_loaders import PyMuPDFLoader, TextLoader
+from langchain.document_loaders import Docx2txtLoader, PyMuPDFLoader, TextLoader
 from langchain.schema import Document
 from langchain.text_splitter import CharacterTextSplitter
 from streamlit.runtime.uploaded_file_manager import UploadedFile
@@ -31,8 +31,13 @@ def load_file(file: UploadedFile) -> list[Document]:
     """
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 
-    # Handle PDF files
-    if file.name.endswith("pdf"):
+    # Handle .docx files
+    if file.name.endswith(".docx"):
+        temp_file = save_to_temp_file(file)
+        return Docx2txtLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
+
+    # Handle .pdf files
+    elif file.name.endswith(".pdf"):
         temp_file = save_to_temp_file(file)
         return PyMuPDFLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
 

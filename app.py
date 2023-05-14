@@ -36,7 +36,7 @@ def run_summarization(document: list[Document], doc_name: str):
 
 st.title("RabbitHole")
 
-uploaded_files = st.file_uploader("Upload content", type=["pdf", "txt", *SUPPORTED_FILE_TYPES],
+uploaded_files = st.file_uploader("Upload content", type=["docx", "pdf", "txt", *SUPPORTED_FILE_TYPES],
                                   accept_multiple_files=True)
 
 if st.button("Summarize"):

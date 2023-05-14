@@ -3,12 +3,12 @@
 from moviepy.editor import AudioFileClip
 from pydub import AudioSegment
 
-SUPPORTED_FILE_TYPES = [
+SUPPORTED_FILE_TYPES = (
     # Video formats
     "mp4", "mkv", "webm", "flv", "avi", "mov", "wmv",
     # Audio formats
     "mp3", "wav", "m4a", "flac", "ogg",
-]
+)
 
 
 def convert_to_mp3(filepath: str) -> str:

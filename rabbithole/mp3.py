@@ -21,6 +21,10 @@ def convert_to_mp3(filepath: str) -> str:
     :return: Path to converted file
     """
 
+    # If mp3 file, return the filepath
+    if filepath.endswith('.mp3'):
+        return filepath
+
     # Check if the file type is supported
     if filepath.rsplit('.', 1)[-1] not in SUPPORTED_FILE_TYPES:
         raise ValueError(f"Unsupported file type: {filepath.rsplit('.', 1)[-1]}")

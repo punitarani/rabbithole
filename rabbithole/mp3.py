@@ -60,6 +60,7 @@ def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
 
     # PyDub handles time in milliseconds
     chunk_length *= 60 * 1000 * 1.01  # Add 1% to the chunk length to account for overlap
+    chunk_length = int(chunk_length)
 
     if length < chunk_length:
         return [filepath]

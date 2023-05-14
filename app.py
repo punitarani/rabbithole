@@ -97,9 +97,8 @@ if st.button("Dive in"):
     # Display the keywords and summaries
     for doc_name, doc_keywords in global_keywords.items():
         st.header(doc_name)
-        st.subheader("Keywords")
-        st.write(doc_keywords)
-        st.subheader("Summary")
+        st.caption("Keywords: " + ", ".join(doc_keywords))
         st.write(global_summaries[doc_name])
+        st.divider()
 
     st.success('Summarization completed.')

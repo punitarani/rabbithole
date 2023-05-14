@@ -25,6 +25,7 @@ torchaudio = "^2.0.2"
 transformers = "^4.29.1"
 tqdm = "^4.65.0"
 unstructured = "^0.6.6"
+streamlit-chat = "^0.0.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

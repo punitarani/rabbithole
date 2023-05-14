@@ -1,27 +1,37 @@
 """rabbithole.wikipedia module"""
 
+import streamlit as st
 from chromadb.api import Collection
+from chromadb.errors import ChromaError
 from datasets import load_dataset
 from tqdm import tqdm
 
 from rabbithole.vecstore import client
 
-wikipedia_dataset = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train", streaming=False)
 
-
+@st.cache_resource
 def get_wikipedia_collection() -> Collection:
     """
     Get the wikipedia collection
+    :return: The wikipedia collection
     """
-    return client.get_collection("wikipedia")
+    try:
+        return client.get_collection("wikipedia")
+    except (ValueError, ChromaError):
+        return prepare_wikipedia_collection()
 
 
-def prepare_wikipedia_collection(batch_size: int = 10000):
+def prepare_wikipedia_collection(batch_size: int = 10000) -> Collection:
     """
     Prepare the wikipedia collection
+    :param batch_size: Batch size to use when adding documents to the collection
+    :return: The wikipedia collection
 
     NOTE: Only needs to be run once to prepare the collection for the first time
     """
+    wikipedia_dataset = load_dataset("Cohere/wikipedia-22-12-simple-embeddings", split="train", streaming=False)
+    print(f"Loaded Wikipedia dataset: {wikipedia_dataset.info}\n")
+
     for collection in client.list_collections():
         if collection.name == "wikipedia":
             print("Wikipedia collection already exists. Deleting and recreating...")
@@ -42,7 +52,8 @@ def prepare_wikipedia_collection(batch_size: int = 10000):
 
             pbar.update(batch_size)
 
+    return collection
+
 
 if __name__ == "__main__":
-    print(wikipedia_dataset.info)
     prepare_wikipedia_collection()

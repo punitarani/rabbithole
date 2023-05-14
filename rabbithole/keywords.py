@@ -4,6 +4,7 @@ from collections import Counter
 from heapq import nlargest
 from math import log
 
+import streamlit as st
 from chromadb.api import QueryResult
 
 from rabbithole.wikipedia import get_wikipedia_collection
@@ -11,6 +12,7 @@ from rabbithole.wikipedia import get_wikipedia_collection
 wikipedia_collection = get_wikipedia_collection()
 
 
+@st.cache_data
 def get_document_keywords(embeddings: list[list[float]], n: int = 10, n_mult=3) -> list[str]:
     """
     Get keywords from the text embeddings of a document

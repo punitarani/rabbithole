@@ -1,6 +1,7 @@
 """rabbithole.loader module"""
 import tempfile
 
+import streamlit as st
 from langchain.document_loaders import Docx2txtLoader, PyMuPDFLoader, TextLoader, UnstructuredImageLoader
 from langchain.schema import Document
 from langchain.text_splitter import CharacterTextSplitter
@@ -24,6 +25,7 @@ def save_to_temp_file(file: UploadedFile) -> str:
     return temp_file.name
 
 
+@st.cache_data
 def load_file(file: UploadedFile) -> list[Document]:
     """
     Load a file and return a list of Document objects

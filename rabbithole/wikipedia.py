@@ -1,6 +1,7 @@
 """rabbithole.wikipedia module"""
 
 from datasets import load_dataset
+from tqdm import tqdm
 
 from vecstore import client
 
@@ -15,8 +16,8 @@ def prepare_wikipedia_collection(batch_size: int = 10000):
     NOTE: Only needs to be run once to prepare the collection for the first time
     """
     total_rows = len(wikipedia_dataset)
-    for i in range(0, total_rows, batch_size):
-        batch_data = wikipedia_dataset[i: i + batch_size]
+    for i in tqdm(range(0, total_rows, batch_size), desc='Processing batches'):
+        batch_data = wikipedia_dataset[i: i+batch_size]
         ids, embeddings, documents, metadatas = zip(
             *[(i, row['emb'], row['text'], row['title']) for i, row in enumerate(batch_data)])
 

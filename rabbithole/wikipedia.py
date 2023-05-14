@@ -1,11 +1,19 @@
 """rabbithole.wikipedia module"""
 
+import os
+
 from chromadb.api import Collection
 from chromadb.errors import ChromaError
+from chromadb.utils import embedding_functions
 from datasets import load_dataset
 from tqdm import tqdm
 
 from rabbithole.vecstore import client
+
+cohere_ef = embedding_functions.CohereEmbeddingFunction(
+    api_key=os.getenv("COHERE_API_KEY"),
+    model_name="multilingual-22-12",
+)
 
 
 def get_wikipedia_collection() -> Collection:
@@ -14,7 +22,7 @@ def get_wikipedia_collection() -> Collection:
     :return: The wikipedia collection
     """
     try:
-        return client.get_collection("wikipedia")
+        return client.get_collection("wikipedia", embedding_function=cohere_ef)
     except (ValueError, ChromaError):
         return prepare_wikipedia_collection()
 
@@ -35,7 +43,7 @@ def prepare_wikipedia_collection(batch_size: int = 10000) -> Collection:
             print("Wikipedia collection already exists. Deleting and recreating...")
             client.delete_collection("wikipedia")
             break
-    collection = client.create_collection("wikipedia")
+    collection = client.create_collection("wikipedia", embedding_function=cohere_ef)
 
     total_rows = len(wikipedia_dataset)
     with tqdm(total=total_rows, desc='Processing batches', unit='vectors') as pbar:

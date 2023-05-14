@@ -75,13 +75,15 @@ def generate_summary_with_spinner(documents: dict[str, list[Document]]) -> dict[
     return summaries
 
 
+st.set_page_config(page_title="RabbitHole", page_icon="🐇", layout="wide")
+
 st.title("RabbitHole")
 
 uploaded_files = st.file_uploader("Upload content",
                                   type=["docx", "pdf", "txt", *SUPPORTED_IMG_FILE_TYPES, *SUPPORTED_AV_FILE_TYPES],
                                   accept_multiple_files=True)
 
-if st.button("Summarize"):
+if st.button("Dive in"):
     if not uploaded_files:
         st.warning("Please upload a file first.")
         st.stop()

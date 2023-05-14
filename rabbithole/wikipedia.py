@@ -1,6 +1,5 @@
 """rabbithole.wikipedia module"""
 
-import streamlit as st
 from chromadb.api import Collection
 from chromadb.errors import ChromaError
 from datasets import load_dataset
@@ -9,7 +8,6 @@ from tqdm import tqdm
 from rabbithole.vecstore import client
 
 
-@st.cache_resource
 def get_wikipedia_collection() -> Collection:
     """
     Get the wikipedia collection

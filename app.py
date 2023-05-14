@@ -4,7 +4,7 @@ import streamlit as st
 from langchain.schema import Document
 
 from rabbithole import summarize_document
-from rabbithole.loader import load_file
+from rabbithole.loader import load_file, SUPPORTED_IMG_FILE_TYPES
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES
 
 # Global variables
@@ -36,7 +36,8 @@ def run_summarization(document: list[Document], doc_name: str):
 
 st.title("RabbitHole")
 
-uploaded_files = st.file_uploader("Upload content", type=["docx", "pdf", "txt", *SUPPORTED_AV_FILE_TYPES],
+uploaded_files = st.file_uploader("Upload content",
+                                  type=["docx", "pdf", "txt", *SUPPORTED_IMG_FILE_TYPES, *SUPPORTED_AV_FILE_TYPES],
                                   accept_multiple_files=True)
 
 if st.button("Summarize"):

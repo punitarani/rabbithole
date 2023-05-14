@@ -1,13 +1,15 @@
 """rabbithole.loader module"""
 import tempfile
 
-from langchain.document_loaders import Docx2txtLoader, PyMuPDFLoader, TextLoader
+from langchain.document_loaders import Docx2txtLoader, PyMuPDFLoader, TextLoader, UnstructuredImageLoader
 from langchain.schema import Document
 from langchain.text_splitter import CharacterTextSplitter
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 from rabbithole.mp3 import SUPPORTED_AV_FILE_TYPES, convert_to_mp3
 from rabbithole.transcribe import transcribe
+
+SUPPORTED_IMG_FILE_TYPES = (".jpg", ".jpeg", ".png")
 
 
 def save_to_temp_file(file: UploadedFile) -> str:
@@ -45,6 +47,11 @@ def load_file(file: UploadedFile) -> list[Document]:
     elif file.name.endswith(".txt"):
         temp_file = save_to_temp_file(file)
         return TextLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
+
+    # Handle image files
+    elif file.name.endswith(SUPPORTED_IMG_FILE_TYPES):
+        temp_file = save_to_temp_file(file)
+        return UnstructuredImageLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
 
     # Handle Audio and Video files
     elif file.name.endswith(SUPPORTED_AV_FILE_TYPES):

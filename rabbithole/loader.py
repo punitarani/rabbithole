@@ -33,7 +33,7 @@ def load_file(file: UploadedFile) -> list[Document]:
     Supported file types: PDF
     :return: List of Document objects
     """
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    text_splitter = CharacterTextSplitter(chunk_size=4000, chunk_overlap=200)
 
     # Handle .docx files
     if file.name.endswith(".docx"):

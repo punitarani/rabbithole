@@ -41,7 +41,7 @@ def convert_to_mp3(filepath: str) -> str:
 
 def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
     """
-    Chunk an mp3 file into smaller mp3 files
+    Chunk a mp3 file into smaller mp3 files
     :param filepath: File to chunk
     :param chunk_length: Length of each chunk in seconds
     :return: List of chunked filepaths
@@ -55,14 +55,23 @@ def chunk_mp3(filepath: str, chunk_length: int = 10) -> list[str]:
     length = len(audio)
 
     # PyDub handles time in milliseconds
-    chunk_length *= 60 * 1000
+    chunk_length *= 60 * 1000 * 1.01  # Add 1% to the chunk length to account for overlap
+
+    if length < chunk_length:
+        return [filepath]
 
     # Get the number of chunks and start and end times for each chunk
     chunks = []
     for i in range(0, length, chunk_length):
         start = i
         end = min(length, i + chunk_length)
-        chunks.append(audio[start:end])
+        audio_chunk = audio[start:end]
+
+        # Ignore chunks that are too small
+        if len(audio_chunk) < 1000:
+            continue
+
+        chunks.append(audio_chunk)
 
     # Write each chunk to a file
     chunked_filepaths = []

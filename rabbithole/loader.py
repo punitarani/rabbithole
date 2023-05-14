@@ -36,6 +36,11 @@ def load_file(file: UploadedFile) -> list[Document]:
         temp_file = save_to_temp_file(file)
         return PyMuPDFLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
 
+    # Handle .txt files
+    elif file.name.endswith(".txt"):
+        temp_file = save_to_temp_file(file)
+        return TextLoader(file_path=temp_file).load_and_split(text_splitter=text_splitter)
+
     # Handle Audio and Video files
     elif file.name.endswith(SUPPORTED_FILE_TYPES):
         temp_file = save_to_temp_file(file)
